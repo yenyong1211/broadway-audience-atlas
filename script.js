@@ -1092,7 +1092,6 @@ function drawAllCharts() {
   });
 
   drawDumbbellChart("#education-chart", educationData);
-  drawIncomeLadder();
   drawAttendanceSlope();
 
   updateMapStep("world");
