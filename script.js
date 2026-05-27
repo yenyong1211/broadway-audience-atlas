@@ -79,16 +79,6 @@ const educationData = [
   { group: "Vocational", broadway: 4.9, census: 8.8 }
 ];
 
-const incomeData = [
-  { group: "Less than $25k", broadway: 7.8, census: 15.2 },
-  { group: "$25k-$49,999", broadway: 7.5, census: 17.1 },
-  { group: "$50k-$74,999", broadway: 9.5, census: 16.1 },
-  { group: "$75k-$99,999", broadway: 10.4, census: 12.7 },
-  { group: "$100k-$149,999", broadway: 16.5, census: 17.4 },
-  { group: "$150k-$249,999", broadway: 19.3, census: 14.2 },
-  { group: "$250k or more", broadway: 29.1, census: 7.3 }
-];
-
 const attendanceData = [
   { group: "1 show", theatregoers: 38.1, visits: 7.3 },
   { group: "2-4 shows", theatregoers: 33.2, visits: 19.2 },
@@ -451,64 +441,6 @@ function drawDumbbellChart(containerId, data) {
     { label: "U.S. Population", color: colors.gold },
     { label: "Broadway Audience", color: colors.red }
   ], margin.left, height - 25);
-}
-
-function drawIncomeLadder() {
-  const el = d3.select("#income-chart");
-  el.selectAll("*").remove();
-
-  const width = 980;
-  const height = 540;
-  const margin = { top: 42, right: 70, bottom: 72, left: 190 };
-
-  const svg = el.append("svg").attr("viewBox", `0 0 ${width} ${height}`);
-
-  const y = d3.scaleBand()
-    .domain(incomeData.map(d => d.group))
-    .range([margin.top, height - margin.bottom])
-    .padding(0.18);
-
-  const x = d3.scaleLinear()
-    .domain([0, 35])
-    .range([margin.left, width - margin.right]);
-
-  svg.append("g")
-    .attr("class", "axis")
-    .attr("transform", `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y));
-
-  svg.append("g")
-    .attr("class", "axis")
-    .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(d3.axisBottom(x).ticks(5).tickFormat(d => `${d}%`));
-
-  svg.selectAll("rect")
-    .data(incomeData)
-    .join("rect")
-    .attr("x", margin.left)
-    .attr("y", d => y(d.group))
-    .attr("height", y.bandwidth())
-    .attr("width", 0)
-    .attr("rx", 12)
-    .attr("fill", (d, i) => d3.interpolateRgb(colors.gold, colors.red)(i / (incomeData.length - 1)))
-    .on("mousemove", (event, d) => {
-      showTooltip(event, `<strong>${d.group}</strong><br>Broadway Audience: ${pct(d.broadway)}<br>U.S. Population: ${pct(d.census)}`);
-    })
-    .on("mouseleave", hideTooltip)
-    .transition()
-    .duration(900)
-    .delay((d, i) => i * 70)
-    .attr("width", d => x(d.broadway) - margin.left);
-
-  svg.selectAll("text.value")
-    .data(incomeData)
-    .join("text")
-    .attr("x", d => x(d.broadway) + 10)
-    .attr("y", d => y(d.group) + y.bandwidth() / 2 + 4)
-    .attr("font-size", 12)
-    .attr("font-weight", 900)
-    .attr("fill", colors.ink)
-    .text(d => pct(d.broadway));
 }
 
 function drawAttendanceSlope() {
