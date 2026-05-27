@@ -894,7 +894,7 @@ function updateSelectedShow(d) {
   d3.select("#selected-show-detail").html(`
     <strong>Type:</strong> ${d.type}<br>
     <strong>Gross:</strong> $${d.gross.toFixed(1)}M<br>
-    <strong>Attendance:</strong> ${d.attendance.toFixed(3)}M<br>
+    <strong>Attendance:</strong> ${Math.round(d.attendance * 1000)}k<br>
     <strong>Capacity:</strong> ${d.capacity}%<br>
     <strong>Average Ticket:</strong> $${d.avgTicket}<br>
     <strong>Top Ticket:</strong> $${d.topTicket || "N/A"}<br>
@@ -948,9 +948,9 @@ function drawShowBubbleChart() {
     .call(d3.axisLeft(y).ticks(6).tickSize(-(width - margin.left - margin.right)).tickFormat(""));
 
   svg.append("g")
-    .attr("class", "axis")
-    .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(d3.axisBottom(x).ticks(6).tickFormat(d => `${d}M`));
+  .attr("class", "axis")
+  .attr("transform", `translate(0,${height - margin.bottom})`)
+  .call(d3.axisBottom(x).ticks(6).tickFormat(d => `${Math.round(d * 1000)}k`));
 
   svg.append("g")
     .attr("class", "axis")
@@ -964,7 +964,7 @@ function drawShowBubbleChart() {
     .attr("fill", colors.muted)
     .attr("font-size", 14)
     .attr("font-weight", 900)
-    .text("Attendance in millions");
+    .text("Attendance in thousands");
 
   svg.append("text")
     .attr("transform", "rotate(-90)")
@@ -1025,7 +1025,7 @@ function drawShowBubbleChart() {
       xValueLabel
         .attr("x", cx)
         .attr("y", height - margin.bottom + 34)
-        .text(`${d.attendance.toFixed(3)}M`);
+        .text(`${Math.round(d.attendance * 1000)}k`);
 
       yValueLabel
         .attr("x", margin.left - 10)
@@ -1039,7 +1039,7 @@ function drawShowBubbleChart() {
         event,
         `<strong>${d.show}</strong><br>
         Gross: $${d.gross.toFixed(1)}M<br>
-        Attendance: ${d.attendance.toFixed(3)}M<br>
+        Attendance: ${Math.round(d.attendance * 1000)}k<br>
         Avg Ticket: $${d.avgTicket}<br>
         Top Ticket: $${d.topTicket || "N/A"}<br>
         Capacity: ${d.capacity}%<br>
