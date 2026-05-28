@@ -185,8 +185,8 @@ h1 {
 }
 
 .flip-card {
-  aspect-ratio: 1.15 / 1;
-  perspective: 1200px;
+  aspect-ratio: 1.25 / 1;
+  perspective: 1300px;
 }
 
 .flip-inner {
@@ -220,7 +220,7 @@ h1 {
 .flip-front p {
   margin: 0;
   font-size: clamp(18px, 1.6vw, 40px);
-  line-height: 1.3;
+  line-height: 1.1;
   font-weight: 900;
   color: var(--muted);
 }
