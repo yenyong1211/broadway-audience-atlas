@@ -1,576 +1,657 @@
-const colors = {
-  red: "#9b1d2e",
-  gold: "#d89b2b",
-  green: "#567a4c",
-  blue: "#4d7398",
-  brown: "#845d34",
-  violet: "#765a91",
-  capacity: "#2f8f6f",
-  ink: "#17130f",
-  muted: "#6e6258",
-  line: "#d7c4a5",
-  paper: "#fffaf0"
-};
+:root {
+  --bg: #f6efe2;
+  --paper: #fffaf0;
+  --ink: #17130f;
+  --muted: #6e6258;
 
-const tooltip = d3.select("#tooltip");
+  --red: #9b1d2e;
+  --gold: #d89b2b;
+  --green: #567a4c;
+  --blue: #4d7398;
+  --brown: #845d34;
+  --violet: #765a91;
+  --capacity: #2f8f6f;
 
-function showTooltip(event, html) {
-  tooltip
-    .style("opacity", 1)
-    .html(html)
-    .style("left", `${event.pageX + 14}px`)
-    .style("top", `${event.pageY - 18}px`);
+  --line: #d7c4a5;
+  --soft-shadow: rgba(23, 19, 15, 0.08);
 }
 
-function hideTooltip() {
-  tooltip.style("opacity", 0);
+* {
+  box-sizing: border-box;
 }
 
-function parseNumber(value) {
-  if (value === undefined || value === null) return NaN;
-  return +String(value).replace(/[$,%M,]/g, "").trim();
+html {
+  scroll-behavior: smooth;
 }
 
-
-function initRevealAnimation() {
-  const revealItems = document.querySelectorAll(".reveal");
-
-  const observer = new IntersectionObserver(
-    entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("visible");
-          observer.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.12 }
-  );
-
-  revealItems.forEach(item => observer.observe(item));
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(155, 29, 46, 0.08), transparent 26%),
+    radial-gradient(circle at 88% 14%, rgba(216, 155, 43, 0.1), transparent 26%),
+    linear-gradient(180deg, #fbf5e9 0%, var(--bg) 100%);
+  font-family: Georgia, "Times New Roman", serif;
 }
 
-const mapSteps = {
-  world: {
-    title: "World",
-    text: "International visitors are part of Broadway’s audience economy. This view starts from the global scale.",
-    activeKeys: ["world", "international"],
-    insight: "International visitors account for 20.3% of Broadway admissions."
-  },
-  usa: {
-    title: "United States",
-    text: "The largest non-local audience group comes from elsewhere in the United States.",
-    activeKeys: ["usa", "otherUS"],
-    insight: "Other U.S. audiences account for 42.1% of Broadway admissions."
-  },
-  nyc: {
-    title: "New York Area",
-    text: "Local and suburban audiences remain important, especially for plays.",
-    activeKeys: ["nyc", "suburbs"],
-    insight: "NYC and NYC suburbs together account for 37.7% of Broadway admissions."
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(34px);
+  transition: opacity 0.85s ease, transform 0.85s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.atlas-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  min-height: 78px;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(251, 245, 233, 0.94);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(12px);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 900;
+  font-size: 18px;
+}
+
+.brand-symbol {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--red);
+  color: white;
+  box-shadow: 0 10px 24px rgba(155, 29, 46, 0.2);
+}
+
+.atlas-nav {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.atlas-nav a {
+  padding: 11px 18px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.atlas-nav a:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.hero {
+  max-width: 1500px;
+  margin: 0 auto 34px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(70vh - 100px);
+}
+
+.hero-copy {
+  width: 100%;
+  max-width: 1180px;
+  min-height: auto;
+  padding: 70px 40px 70px;
+  position: relative;
+  overflow: visible;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: center;
+}
+
+.hero-copy::after {
+  content: "ATLAS";
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  font-size: clamp(80px, 12vw, 190px);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: rgba(155, 29, 46, 0.045);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-copy .eyebrow {
+  position: relative;
+  z-index: 2;
+  color: var(--red);
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+h1 {
+  position: relative;
+  z-index: 2;
+  margin: 0 auto;
+  max-width: 1050px;
+  font-size: clamp(72px, 8.4vw, 140px);
+  line-height: 0.82;
+  letter-spacing: -0.075em;
+  text-align: center;
+}
+
+.hero-copy > p:last-child {
+  position: relative;
+  z-index: 2;
+  margin: 34px auto 0;
+  max-width: 800px;
+  color: var(--muted);
+  font-size: 23px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.hero-stats {
+  display: none;
+}
+
+main {
+  padding: 10px 30px 60px;
+}
+
+.chart-card,
+.text-card,
+.side-card {
+  border: 1px solid var(--line);
+  border-radius: 40px;
+  background:
+    linear-gradient(135deg, rgba(255, 250, 240, 0.96), rgba(240, 226, 199, 0.92));
+  box-shadow: 0 22px 56px var(--soft-shadow);
+}
+
+.eyebrow {
+  margin: 0 0 16px;
+  color: var(--red);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.eyebrow.small {
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+
+h1 {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  max-width: 980px;
+  font-size: clamp(76px, 9vw, 160px);
+  line-height: 0.82;
+  letter-spacing: -0.075em;
+}
+
+.content-section {
+  max-width: 1500px;
+  margin: 0 auto 60px;
+  scroll-margin-top: 100px;
+}
+
+.section-heading {
+  margin-bottom: 22px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: clamp(44px, 7vw, 70px);
+  line-height: 0.86;
+  letter-spacing: -0.06em;
+}
+
+.section-description {
+  max-width: 900px;
+  margin: 20px 0 0;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1.6;
+}
+
+.chart-card {
+  padding: 28px 28px 22px;
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-card::after {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  border: 1px dashed rgba(118, 80, 45, 0.22);
+  border-radius: 30px;
+  pointer-events: none;
+}
+
+.chart-card.large {
+  min-height: 690px;
+}
+
+.card-head {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 10px;
+}
+
+.card-head h3,
+.text-card h3 {
+  margin: 0;
+  font-size: clamp(30px, 4vw, 60px);
+  line-height: 0.92;
+  letter-spacing: -0.05em;
+}
+
+.chart-note {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.chart-box {
+  position: relative;
+  z-index: 2;
+  min-height: 420px;
+}
+
+.where-atlas {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.text-card {
+  padding: 36px;
+  align-self: start;
+}
+
+.text-card p:not(.eyebrow) {
+  margin: 24px 0 0;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+.map-step-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.step-btn,
+.bubble-filter,
+.bubble-action {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 250, 240, 0.78);
+  color: var(--ink);
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background 0.22s ease, color 0.22s ease, transform 0.22s ease;
+}
+
+.step-btn:hover,
+.step-btn.active,
+.bubble-filter:hover,
+.bubble-filter.active,
+.bubble-action:hover {
+  background: var(--red);
+  color: white;
+  border-color: var(--red);
+  transform: translateY(-2px);
+}
+
+.key-insight {
+  margin-top: 34px;
+  padding: 24px 26px;
+  border-radius: 28px;
+  background: #120b08;
+  color: var(--paper);
+}
+
+.key-insight span {
+  display: block;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.key-insight p {
+  margin: 14px 0 0 !important;
+  color: rgba(255, 250, 240, 0.88) !important;
+  font-size: 17px !important;
+  line-height: 1.5 !important;
+}
+
+.map-box {
+  min-height: 520px;
+}
+
+.map-shape {
+  cursor: pointer;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.map-shape.dimmed {
+  opacity: 0.18;
+}
+
+.map-shape.active {
+  opacity: 0.96;
+  filter: drop-shadow(0 12px 18px rgba(23, 19, 15, 0.22));
+}
+
+.map-label {
+  fill: var(--ink);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.map-sub-label {
+  fill: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.bubble-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.bubble-card {
+  min-height: 760px;
+}
+
+.bubble-box {
+  min-height: 620px;
+}
+
+.bubble-side-panel {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.side-card {
+  border-radius: 28px;
+  padding: 22px;
+}
+
+.bubble-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.show-search {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 250, 240, 0.84);
+  padding: 12px 16px;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.show-search:focus {
+  outline: 2px solid rgba(155, 29, 46, 0.24);
+}
+
+.selected-show-card h3 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.selected-show-card p {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.bubble {
+  cursor: pointer;
+  transition: opacity 0.25s ease, stroke-width 0.2s ease;
+}
+
+.bubble.faded {
+  opacity: 0.12;
+}
+
+.bubble.selected {
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+
+.bubble.top-highlight {
+  stroke: var(--gold);
+  stroke-width: 4.5;
+  opacity: 1;
+}
+
+.bubble.capacity-highlight {
+  stroke: var(--capacity);
+  stroke-width: 4.5;
+  opacity: 1;
+}
+
+.bubble:hover {
+  opacity: 1;
+  stroke-width: 3;
+}
+
+.capacity-label {
+  fill: var(--capacity);
+  font-size: 11px;
+  font-weight: 900;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: var(--paper);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.bubble-legend-note {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.bubble-legend-note div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-capacity-outline {
+  width: 16px;
+  height: 16px;
+  border: 3px solid var(--capacity);
+  border-radius: 50%;
+  display: inline-block;
+  background: transparent;
+}
+
+.capacity-summary {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(47, 143, 111, 0.12);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 800;
+}
+
+.year-watermark {
+  fill: rgba(23, 19, 15, 0.08);
+  font-size: 150px;
+  font-weight: 900;
+  pointer-events: none;
+}
+
+.hover-guide {
+  pointer-events: none;
+}
+
+.guide-line {
+  stroke: var(--ink);
+  stroke-width: 1.4;
+  stroke-dasharray: 6 6;
+  opacity: 0.55;
+}
+
+.guide-value-label {
+  fill: var(--ink);
+  font-size: 12px;
+  font-weight: 900;
+  paint-order: stroke;
+  stroke: var(--paper);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.axis text {
+  fill: var(--muted);
+  font-size: 12px;
+}
+
+.axis path,
+.axis line {
+  stroke: var(--line);
+}
+
+.grid line {
+  stroke: rgba(118, 80, 45, 0.18);
+}
+
+.grid path {
+  display: none;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 120;
+  pointer-events: none;
+  opacity: 0;
+  max-width: 280px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: white;
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.25);
+}
+
+.atlas-footer {
+  padding: 10px 32px 36px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@media (max-width: 1200px) {
+  .hero,
+  .where-atlas,
+  .bubble-layout {
+    grid-template-columns: 1fr;
   }
-};
 
-let allShows = [];
-let currentTypeFilter = "all";
-let currentSearch = "";
-let highlightedMode = "none";
-
-function drawOriginMap(step = "world") {
-  const el = d3.select("#origin-map");
-  el.selectAll("*").remove();
-
-  const width = 980;
-  const height = 520;
-  const svg = el.append("svg").attr("viewBox", `0 0 ${width} ${height}`);
-
-  const activeKeys = mapSteps[step].activeKeys;
-
-  svg.append("text")
-    .attr("x", 58)
-    .attr("y", 52)
-    .attr("fill", colors.muted)
-    .attr("font-size", 14)
-    .attr("font-weight", 900)
-    .attr("letter-spacing", 3)
-    .text("ZOOM MAP STORY");
-
-  svg.append("path")
-    .attr("d", "M188,370 C310,430 610,430 790,340")
-    .attr("fill", "none")
-    .attr("stroke", colors.line)
-    .attr("stroke-width", 3)
-    .attr("stroke-dasharray", "8 10");
-
-  const shapes = [
-    {
-      key: "world",
-      label: "World",
-      sub: "International 20.3%",
-      color: colors.green,
-      d: "M110,165 C165,105 265,102 330,150 C390,195 380,285 310,320 C230,360 115,320 86,245 C74,215 80,185 110,165Z",
-      tx: 230,
-      ty: 230
-    },
-    {
-      key: "usa",
-      label: "United States",
-      sub: "Other U.S. 42.1%",
-      color: colors.brown,
-      d: "M365,170 C450,105 610,120 675,200 C735,275 685,360 555,365 C420,370 325,290 365,170Z",
-      tx: 525,
-      ty: 245
-    },
-    {
-      key: "suburbs",
-      label: "NYC Suburbs",
-      sub: "12.6%",
-      color: colors.gold,
-      d: "M720,210 C758,176 830,180 860,228 C890,278 854,330 790,330 C735,330 690,258 720,210Z",
-      tx: 790,
-      ty: 255
-    },
-    {
-      key: "nyc",
-      label: "NYC",
-      sub: "25.1%",
-      color: colors.red,
-      d: "M855,210 C886,180 933,190 950,232 C968,278 938,322 888,318 C845,312 820,246 855,210Z",
-      tx: 895,
-      ty: 255
-    }
-  ];
-
-  const groups = svg.selectAll(".map-group")
-    .data(shapes)
-    .join("g")
-    .attr("opacity", 0);
-
-  groups.append("path")
-    .attr("class", d => `map-shape ${activeKeys.includes(d.key) ? "active" : "dimmed"}`)
-    .attr("d", d => d.d)
-    .attr("fill", d => d.color)
-    .attr("stroke", colors.paper)
-    .attr("stroke-width", 4)
-    .on("mousemove", (event, d) => {
-      showTooltip(event, `<strong>${d.label}</strong><br>${d.sub}`);
-    })
-    .on("mouseleave", hideTooltip)
-    .on("click", (event, d) => {
-      if (d.key === "world") updateMapStep("world");
-      if (d.key === "usa") updateMapStep("usa");
-      if (d.key === "nyc" || d.key === "suburbs") updateMapStep("nyc");
-    });
-
-  groups.append("text")
-    .attr("class", "map-label")
-    .attr("x", d => d.tx)
-    .attr("y", d => d.ty)
-    .attr("text-anchor", "middle")
-    .text(d => d.label);
-
-  groups.append("text")
-    .attr("class", "map-sub-label")
-    .attr("x", d => d.tx)
-    .attr("y", d => d.ty + 23)
-    .attr("text-anchor", "middle")
-    .text(d => d.sub);
-
-  groups.transition()
-    .duration(800)
-    .delay((d, i) => i * 100)
-    .attr("opacity", 1);
-}
-
-function updateMapStep(step) {
-  d3.selectAll(".step-btn").classed("active", function () {
-    return d3.select(this).attr("data-map-step") === step;
-  });
-
-  d3.select("#map-step-title").text(mapSteps[step].title);
-  d3.select("#map-step-text").text(mapSteps[step].text);
-  d3.select("#origin-insight").text(mapSteps[step].insight);
-
-  drawOriginMap(step);
-}
-
-function normalizeShow(row) {
-  return {
-    show: row.show || row.Show || row.title || row.Title || row.name || row.Name,
-    type: row.type || row.Type || row.category || row.Category || "Musical",
-    gross: parseNumber(row.gross || row.Gross || row.totalGross || row["Total Gross"] || row["Gross"]),
-    attendance: parseNumber(row.attendance || row.Attendance || row.totalAttendance || row["Total Attendance"]),
-    capacity: parseNumber(row.capacity || row.Capacity || row["Capacity"]),
-    avgTicket: parseNumber(row.avgTicket || row["Avg Ticket"] || row.averageTicket || row["Average Ticket"]),
-    topTicket: parseNumber(row.topTicket || row["Top Ticket"] || row.top_ticket),
-    performances: parseNumber(row.performances || row.Performances)
-  };
-}
-
-function initFallbackShows() {
-  return [
-    { show: "WICKED", type: "Musical", gross: 126.549673, attendance: 0.805068, capacity: 100, avgTicket: 157, topTicket: 375, performances: 418 },
-    { show: "HAMILTON", type: "Musical", gross: 128.950063, attendance: 0.624928, capacity: 98.28, avgTicket: 233, topTicket: 1500, performances: 416 },
-    { show: "THE LION KING", type: "Musical", gross: 106.781983, attendance: 0.708928, capacity: 96.81, avgTicket: 155, topTicket: 477, performances: 418 },
-    { show: "ALADDIN", type: "Musical", gross: 68.387147, attendance: 0.721886, capacity: 94.52, avgTicket: 100, topTicket: 350, performances: 418 },
-    { show: "OTHELLO", type: "Play", gross: 46.707510, attendance: 0.124087, capacity: 99.93, avgTicket: 377, topTicket: 897, performances: 119 }
-  ];
-}
-
-function getFilteredShows() {
-  return allShows.filter(d => {
-    const typeOk = currentTypeFilter === "all" || d.type === currentTypeFilter;
-    const searchOk = d.show.toLowerCase().includes(currentSearch.toLowerCase());
-    return typeOk && searchOk;
-  });
-}
-
-function updateSelectedShow(d) {
-  d3.select("#selected-show-name").text(d.show);
-
-  d3.select("#selected-show-detail").html(`
-    Type: ${d.type}<br>
-    Gross: $${d.gross.toFixed(1)}M<br>
-    Attendance: ${Math.round(d.attendance * 1000)}k<br>
-    Capacity: ${d.capacity.toFixed(1)}%${d.capacity >= 98 ? " ★ High Capacity" : ""}<br>
-    Average Ticket: $${d.avgTicket}<br>
-    Top Ticket: $${d.topTicket || "N/A"}<br>
-    Performances: ${d.performances || "N/A"}
-  `);
-}
-
-function drawShowBubbleChart() {
-  const el = d3.select("#show-bubble-chart");
-  el.selectAll("*").remove();
-
-  const data = getFilteredShows();
-
-  const width = 1120;
-  const height = 720;
-  const margin = { top: 54, right: 40, bottom: 92, left: 100 };
-
-  const svg = el.append("svg").attr("viewBox", `0 0 ${width} ${height}`);
-
-  const x = d3.scaleLinear()
-    .domain([0, 0.85])
-    .range([margin.left, width - margin.right]);
-
-  const y = d3.scaleLinear()
-    .domain([0, 140])
-    .range([height - margin.bottom, margin.top]);
-
-  const r = d3.scaleSqrt()
-    .domain(d3.extent(allShows, d => d.avgTicket))
-    .range([7, 30]);
-
-  const color = d3.scaleOrdinal()
-    .domain(["Musical", "Play"])
-    .range([colors.red, colors.blue]);
-
-  svg.append("text")
-    .attr("class", "year-watermark")
-    .attr("x", width / 2)
-    .attr("y", height / 2 + 45)
-    .attr("text-anchor", "middle")
-    .text("2025");
-
-  svg.append("g")
-    .attr("class", "grid")
-    .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(
-      d3.axisBottom(x)
-        .tickValues([...d3.range(0, 0.81, 0.1), 0.85])
-        .tickSize(-(height - margin.top - margin.bottom))
-        .tickFormat("")
-    );
-
-  svg.append("g")
-    .attr("class", "grid")
-    .attr("transform", `translate(${margin.left},0)`)
-    .call(
-      d3.axisLeft(y)
-        .tickValues(d3.range(0, 141, 10))
-        .tickSize(-(width - margin.left - margin.right))
-        .tickFormat("")
-    );
-
-  svg.append("g")
-    .attr("class", "axis")
-    .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(
-      d3.axisBottom(x)
-        .tickValues(d3.range(0, 1.0, 0.1))
-        .tickFormat(d => `${Math.round(d * 1000)}k`)
-    );
-
-  svg.append("g")
-    .attr("class", "axis")
-    .attr("transform", `translate(${margin.left},0)`)
-    .call(
-      d3.axisLeft(y)
-        .tickValues(d3.range(0, 141, 10))
-        .tickFormat(d => `$${d}M`)
-    );
-
-  svg.append("text")
-    .attr("x", width / 2)
-    .attr("y", height - 34)
-    .attr("text-anchor", "middle")
-    .attr("fill", colors.muted)
-    .attr("font-size", 14)
-    .attr("font-weight", 900)
-    .text("Attendance in thousands");
-
-  svg.append("text")
-    .attr("transform", "rotate(-90)")
-    .attr("x", -height / 2)
-    .attr("y", 34)
-    .attr("text-anchor", "middle")
-    .attr("fill", colors.muted)
-    .attr("font-size", 14)
-    .attr("font-weight", 900)
-    .text("Gross revenue in millions");
-
-  const hoverGuide = svg.append("g")
-    .attr("class", "hover-guide")
-    .style("display", "none");
-
-  const verticalGuide = hoverGuide.append("line").attr("class", "guide-line");
-  const horizontalGuide = hoverGuide.append("line").attr("class", "guide-line");
-
-  const xValueLabel = hoverGuide.append("text")
-    .attr("class", "guide-value-label")
-    .attr("text-anchor", "middle");
-
-  const yValueLabel = hoverGuide.append("text")
-    .attr("class", "guide-value-label")
-    .attr("text-anchor", "end");
-
-  const plot = svg.append("g").attr("class", "bubble-plot");
-
-  const bubbles = plot.selectAll("circle")
-    .data(data, d => d.show)
-    .join("circle")
-    .attr("class", "bubble")
-    .attr("cx", d => x(d.attendance))
-    .attr("cy", d => y(d.gross))
-    .attr("r", 0)
-    .attr("fill", d => color(d.type))
-    .attr("opacity", 0.76)
-    .attr("stroke", colors.ink)
-    .attr("stroke-width", 1)
-    .on("mousemove", function (event, d) {
-      const cx = x(d.attendance);
-      const cy = y(d.gross);
-
-      hoverGuide.style("display", null);
-
-      verticalGuide
-        .attr("x1", cx)
-        .attr("x2", cx)
-        .attr("y1", cy)
-        .attr("y2", height - margin.bottom);
-
-      horizontalGuide
-        .attr("x1", margin.left)
-        .attr("x2", cx)
-        .attr("y1", cy)
-        .attr("y2", cy);
-
-      xValueLabel
-        .attr("x", cx)
-        .attr("y", height - margin.bottom + 34)
-        .text(`${Math.round(d.attendance * 1000)}k`);
-
-      yValueLabel
-        .attr("x", margin.left - 10)
-        .attr("y", cy + 4)
-        .text(`$${d.gross.toFixed(1)}M`);
-
-      d3.selectAll(".bubble").classed("faded", true);
-      d3.select(this).classed("faded", false);
-
-      showTooltip(
-        event,
-        `<strong>${d.show}</strong><br>
-        Gross: $${d.gross.toFixed(1)}M<br>
-        Attendance: ${Math.round(d.attendance * 1000)}k<br>
-        Avg Ticket: $${d.avgTicket}<br>
-        Top Ticket: $${d.topTicket || "N/A"}<br>
-        Capacity: <strong>${d.capacity.toFixed(1)}%</strong> ${d.capacity >= 98 ? "★ High Capacity" : ""}<br>
-        Performances: ${d.performances || "N/A"}<br>
-        Type: ${d.type}`
-      );
-
-      updateSelectedShow(d);
-    })
-    .on("mouseleave", function () {
-      hoverGuide.style("display", "none");
-      d3.selectAll(".bubble").classed("faded", false);
-      hideTooltip();
-      applyBubbleHighlight();
-    })
-    .on("click", function (event, d) {
-      d3.selectAll(".bubble").classed("selected", false);
-      d3.select(this).classed("selected", true);
-      updateSelectedShow(d);
-    });
-
-  bubbles.transition()
-    .duration(950)
-    .delay((d, i) => i * 16)
-    .attr("r", d => r(d.avgTicket));
-
-  applyBubbleHighlight();
-}
-
-function applyBubbleHighlight() {
-  d3.selectAll(".bubble")
-    .classed("top-highlight", false)
-    .classed("capacity-highlight", false)
-    .classed("faded", false);
-
-  d3.selectAll(".capacity-label").remove();
-
-  const capacitySummary = d3.select("#capacity-summary");
-
-  if (highlightedMode === "none") {
-    capacitySummary.text("High capacity means a show was close to selling out.");
-    return;
-  }
-
-  if (highlightedMode === "topGross") {
-    const top = [...allShows]
-      .sort((a, b) => b.gross - a.gross)
-      .slice(0, 5)
-      .map(d => d.show);
-
-    d3.selectAll(".bubble")
-      .classed("faded", d => !top.includes(d.show))
-      .classed("top-highlight", d => top.includes(d.show));
-
-    capacitySummary.text("Top Gross highlights the 5 highest-grossing shows.");
-
-    d3.select("#selected-show-name").text("Top Gross Highlight");
-    d3.select("#selected-show-detail").html(`
-      Highlighting the top 5 shows by total gross revenue.
-      Other bubbles are faded so the highest-grossing productions are easier to compare.
-    `);
-  }
-
-  if (highlightedMode === "highCapacity") {
-    const threshold = 98;
-
-    const highCapacityShows = allShows.filter(d => d.capacity >= threshold);
-    const visibleHighCapacityShows = getFilteredShows().filter(d => d.capacity >= threshold);
-
-    d3.selectAll(".bubble")
-      .classed("faded", d => d.capacity < threshold)
-      .classed("capacity-highlight", d => d.capacity >= threshold);
-
-    d3.select(".bubble-plot")
-      .selectAll("text.capacity-label")
-      .data(visibleHighCapacityShows, d => d.show)
-      .join("text")
-      .attr("class", "capacity-label")
-      .attr("x", d => {
-        const bubble = d3.selectAll(".bubble").filter(b => b.show === d.show).node();
-        return bubble ? +bubble.getAttribute("cx") + 12 : 0;
-      })
-      .attr("y", d => {
-        const bubble = d3.selectAll(".bubble").filter(b => b.show === d.show).node();
-        return bubble ? +bubble.getAttribute("cy") - 12 : 0;
-      })
-      .attr("opacity", 0)
-      .text(d => `${d.capacity.toFixed(1)}%`)
-      .transition()
-      .duration(500)
-      .attr("opacity", 1);
-
-    capacitySummary.html(`
-      <strong>${highCapacityShows.length} shows</strong> have Capacity ≥ ${threshold}%.<br>
-      This means these shows were close to selling out or used seats very efficiently.
-    `);
-
-    d3.select("#selected-show-name").text("High Capacity Highlight");
-    d3.select("#selected-show-detail").html(`
-      Green outline marks shows with <strong>Capacity ≥ ${threshold}%</strong>.<br>
-      The green labels show each show's capacity percentage.<br>
-      High capacity is important because it suggests strong seat demand and high seat utilisation.
-    `);
+  .hero-stats {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-d3.selectAll(".step-btn").on("click", function () {
-  const step = d3.select(this).attr("data-map-step");
-  updateMapStep(step);
-});
+@media (max-width: 900px) {
+  .hero-stats {
+    grid-template-columns: 1fr;
+  }
 
-d3.selectAll(".bubble-filter").on("click", function () {
-  currentTypeFilter = d3.select(this).attr("data-type");
-
-  d3.selectAll(".bubble-filter").classed("active", false);
-  d3.select(this).classed("active", true);
-
-  drawShowBubbleChart();
-});
-
-d3.select("#show-search").on("input", function () {
-  currentSearch = this.value;
-  drawShowBubbleChart();
-});
-
-d3.select("#highlight-top-gross").on("click", function () {
-  highlightedMode = "topGross";
-  applyBubbleHighlight();
-});
-
-d3.select("#highlight-high-capacity").on("click", function () {
-  highlightedMode = "highCapacity";
-  applyBubbleHighlight();
-});
-
-d3.select("#reset-bubbles").on("click", function () {
-  highlightedMode = "none";
-  currentSearch = "";
-  currentTypeFilter = "all";
-
-  d3.select("#show-search").property("value", "");
-  d3.selectAll(".bubble-filter").classed("active", false);
-  d3.select('.bubble-filter[data-type="all"]').classed("active", true);
-
-  drawShowBubbleChart();
-
-  d3.select("#selected-show-name").text("Hover or click a bubble");
-  d3.select("#selected-show-detail").text("Show details will appear here.");
-});
-
-function drawAllCharts() {
-  updateMapStep("world");
-  drawShowBubbleChart();
+  .flip-card {
+    height: 170px;
+  }
 }
 
-initRevealAnimation();
+@media (max-width: 740px) {
+  .atlas-header {
+    padding: 16px 18px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
 
-d3.csv("data.csv")
-  .then(rows => {
-    allShows = rows
-      .map(normalizeShow)
-      .filter(d =>
-        d.show &&
-        !Number.isNaN(d.gross) &&
-        !Number.isNaN(d.attendance) &&
-        !Number.isNaN(d.capacity) &&
-        !Number.isNaN(d.avgTicket)
-      );
+  main {
+    padding: 20px 18px 50px;
+  }
 
-    if (allShows.length === 0) {
-      allShows = initFallbackShows();
-    }
+  .hero-copy,
+  .hero-stats,
+  .chart-card,
+  .text-card,
+  .side-card {
+    border-radius: 28px;
+  }
 
-    drawAllCharts();
-  })
-  .catch(() => {
-    allShows = initFallbackShows();
-    drawAllCharts();
-  });
+  .hero-copy {
+    padding: 34px 26px;
+  }
+
+  h1 {
+    font-size: clamp(56px, 17vw, 88px);
+  }
+
+  .section-heading h2 {
+    font-size: clamp(44px, 15vw, 70px);
+  }
+}
