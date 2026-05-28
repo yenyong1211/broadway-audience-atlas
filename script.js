@@ -5,6 +5,7 @@ const colors = {
   blue: "#4d7398",
   brown: "#845d34",
   violet: "#765a91",
+  capacity: "#2f8f6f",
   ink: "#17130f",
   muted: "#6e6258",
   line: "#d7c4a5",
@@ -18,21 +19,18 @@ function showTooltip(event, html) {
     .style("opacity", 1)
     .html(html)
     .style("left", `${event.pageX + 14}px`)
-    .style("top", `${event.pageY - 19}px`);
+    .style("top", `${event.pageY - 18}px`);
 }
 
 function hideTooltip() {
   tooltip.style("opacity", 0);
 }
 
-function pct(v) {
-  return `${Number(v).toFixed(1)}%`;
-}
-
 function parseNumber(value) {
   if (value === undefined || value === null) return NaN;
   return +String(value).replace(/[$,%M,]/g, "").trim();
 }
+
 
 function initRevealAnimation() {
   const revealItems = document.querySelectorAll(".reveal");
@@ -52,59 +50,10 @@ function initRevealAnimation() {
   revealItems.forEach(item => observer.observe(item));
 }
 
-const raceData = [
-  { group: "White", value: 66.3, color: colors.red },
-  { group: "Asian", value: 11.6, color: colors.gold },
-  { group: "Hispanic / Latiné", value: 9.4, color: colors.brown },
-  { group: "Black", value: 5.4, color: colors.green },
-  { group: "Other", value: 4.3, color: colors.blue },
-  { group: "Mixed Race", value: 3.0, color: colors.violet }
-];
-
-const ageData = [
-  { group: "Under 18", broadway: 10.1, census: 21.7 },
-  { group: "18-24", broadway: 13.1, census: 9.1 },
-  { group: "25-34", broadway: 21.3, census: 13.5 },
-  { group: "35-49", broadway: 22.1, census: 19.3 },
-  { group: "50-64", broadway: 20.0, census: 18.7 },
-  { group: "65+", broadway: 13.4, census: 17.7 }
-];
-
-const educationData = [
-  { group: "Some HS or Less", broadway: 1.1, census: 10.2 },
-  { group: "High School", broadway: 3.4, census: 25.9 },
-  { group: "Some College", broadway: 7.3, census: 18.9 },
-  { group: "College", broadway: 34.8, census: 21.8 },
-  { group: "Advanced Degree", broadway: 48.5, census: 14.3 },
-  { group: "Vocational", broadway: 4.9, census: 8.8 }
-];
-
-const attendanceData = [
-  { group: "1 show", theatregoers: 38.1, visits: 7.3 },
-  { group: "2-4 shows", theatregoers: 33.2, visits: 19.2 },
-  { group: "5-9 shows", theatregoers: 14.6, visits: 19.7 },
-  { group: "10-14 shows", theatregoers: 5.9, visits: 13.6 },
-  { group: "15-24 shows", theatregoers: 3.8, visits: 14.7 },
-  { group: "25+ shows", theatregoers: 4.4, visits: 25.4 }
-];
-
-const originGroups = [
-  { key: "nyc", label: "NYC", value: 25.1, color: colors.red },
-  { key: "suburbs", label: "NYC Suburbs", value: 12.6, color: colors.gold },
-  { key: "otherUS", label: "Other U.S.", value: 42.1, color: colors.brown },
-  { key: "international", label: "International", value: 20.3, color: colors.green }
-];
-
-const originByType = [
-  { type: "Overall", nyc: 25.1, suburbs: 12.6, otherUS: 42.1, international: 20.3 },
-  { type: "Musical", nyc: 23.5, suburbs: 12.2, otherUS: 42.1, international: 22.2 },
-  { type: "Play", nyc: 32.8, suburbs: 14.2, otherUS: 42.2, international: 10.8 }
-];
-
 const mapSteps = {
   world: {
     title: "World",
-    text: "International visitors account for one fifth of Broadway admissions. This view starts from the global scale.",
+    text: "International visitors are part of Broadway’s audience economy. This view starts from the global scale.",
     activeKeys: ["world", "international"],
     insight: "International visitors account for 20.3% of Broadway admissions."
   },
@@ -126,408 +75,6 @@ let allShows = [];
 let currentTypeFilter = "all";
 let currentSearch = "";
 let highlightedMode = "none";
-
-function drawLegend(svg, items, x, y) {
-  const legend = svg.append("g").attr("transform", `translate(${x}, ${y})`);
-
-  const row = legend
-    .selectAll("g")
-    .data(items)
-    .join("g")
-    .attr("transform", (d, i) => `translate(${i * 190}, 0)`);
-
-  row.append("circle").attr("r", 7).attr("fill", d => d.color);
-
-  row.append("text")
-    .attr("x", 14)
-    .attr("y", 5)
-    .attr("fill", colors.muted)
-    .attr("font-size", 13)
-    .attr("font-weight", 900)
-    .text(d => d.label);
-}
-
-function drawRaceWaffleChart() {
-  const el = d3.select("#race-waffle-chart");
-  el.selectAll("*").remove();
-
-  const width = 760;
-  const height = 420;
-  const svg = el.append("svg").attr("viewBox", `0 0 ${width} ${height}`);
-
-  const cells = [];
-  raceData.forEach(d => {
-    for (let i = 0; i < Math.round(d.value); i++) cells.push({ ...d });
-  });
-
-  while (cells.length < 100) {
-    cells.push({ group: "Rounding", value: 0, color: "rgba(23,19,15,0.08)" });
-  }
-
-  const cellSize = 22;
-  const gap = 4;
-  const startX = 42;
-  const startY = 40;
-
-  svg.selectAll("rect.cell")
-    .data(cells.slice(0, 100))
-    .join("rect")
-    .attr("x", (d, i) => startX + (i % 10) * (cellSize + gap))
-    .attr("y", (d, i) => startY + Math.floor(i / 10) * (cellSize + gap))
-    .attr("width", cellSize)
-    .attr("height", cellSize)
-    .attr("rx", 5)
-    .attr("fill", d => d.color)
-    .attr("stroke", colors.paper)
-    .attr("opacity", 0)
-    .on("mousemove", (event, d) => {
-      if (d.group !== "Rounding") {
-        showTooltip(event, `<strong>${d.group}</strong><br>${pct(d.value)} of Broadway audience`);
-      }
-    })
-    .on("mouseleave", hideTooltip)
-    .transition()
-    .duration(700)
-    .delay((d, i) => i * 8)
-    .attr("opacity", 1);
-
-  const legend = svg.append("g").attr("transform", "translate(360, 54)");
-
-  const rows = legend.selectAll("g")
-    .data(raceData)
-    .join("g")
-    .attr("transform", (d, i) => `translate(0, ${i * 38})`);
-
-  rows.append("circle")
-    .attr("r", 7)
-    .attr("fill", d => d.color);
-
-  rows.append("text")
-    .attr("x", 18)
-    .attr("y", 5)
-    .attr("fill", colors.ink)
-    .attr("font-size", 13)
-    .attr("font-weight", 900)
-    .text(d => `${d.group} ${pct(d.value)}`);
-
-  svg.append("text")
-    .attr("x", startX)
-    .attr("y", 340)
-    .attr("fill", colors.muted)
-    .attr("font-size", 13)
-    .attr("font-weight", 900)
-    .text("Each square represents about 1% of the audience.");
-}
-
-function drawMirrorChart(containerId, data, options) {
-  const el = d3.select(containerId);
-  el.selectAll("*").remove();
-
-  const width = 980;
-  const height = 540;
-  const margin = { top: 86, right: 60, bottom: 70, left: 60 };
-  const middleGap = 54;
-  const mid = width / 2;
-  const maxValue = options.maxValue || d3.max(data, d => Math.max(d.broadway, d.census));
-
-  const svg = el.append("svg").attr("viewBox", `0 0 ${width} ${height}`);
-
-  const y = d3.scaleBand()
-    .domain(data.map(d => d.group))
-    .range([margin.top, height - margin.bottom])
-    .padding(0.32);
-
-  const xLeft = d3.scaleLinear()
-    .domain([0, maxValue])
-    .range([mid - middleGap, margin.left]);
-
-  const xRight = d3.scaleLinear()
-    .domain([0, maxValue])
-    .range([mid + middleGap, width - margin.right]);
-
-  svg.append("rect")
-    .attr("x", mid - middleGap)
-    .attr("y", margin.top - 18)
-    .attr("width", middleGap * 2)
-    .attr("height", height - margin.top - margin.bottom + 36)
-    .attr("fill", "rgba(255,250,240,0.92)")
-    .attr("stroke", colors.line);
-
-  svg.append("text")
-    .attr("class", "mirror-title")
-    .attr("x", 145)
-    .attr("y", 44)
-    .attr("text-anchor", "middle")
-    .attr("fill", options.leftColor)
-    .text(options.leftTitle);
-
-  svg.append("text")
-    .attr("class", "mirror-title")
-    .attr("x", mid)
-    .attr("y", 44)
-    .attr("text-anchor", "middle")
-    .text(options.centerTitle);
-
-  svg.append("text")
-    .attr("class", "mirror-title")
-    .attr("x", width - 150)
-    .attr("y", 44)
-    .attr("text-anchor", "middle")
-    .attr("fill", options.rightColor)
-    .text(options.rightTitle);
-
-  svg.selectAll("rect.left-bar")
-    .data(data)
-    .join("rect")
-    .attr("x", xLeft(0))
-    .attr("y", d => y(d.group))
-    .attr("width", 0)
-    .attr("height", y.bandwidth())
-    .attr("fill", options.leftColor)
-    .on("mousemove", (event, d) => {
-      showTooltip(event, `<strong>${d.group}</strong><br>Broadway Audience: ${pct(d.broadway)}`);
-    })
-    .on("mouseleave", hideTooltip)
-    .transition()
-    .duration(900)
-    .delay((d, i) => i * 70)
-    .attr("x", d => xLeft(d.broadway))
-    .attr("width", d => xLeft(0) - xLeft(d.broadway));
-
-  svg.selectAll("rect.right-bar")
-    .data(data)
-    .join("rect")
-    .attr("x", xRight(0))
-    .attr("y", d => y(d.group))
-    .attr("width", 0)
-    .attr("height", y.bandwidth())
-    .attr("fill", options.rightColor)
-    .on("mousemove", (event, d) => {
-      showTooltip(event, `<strong>${d.group}</strong><br>U.S. Population: ${pct(d.census)}`);
-    })
-    .on("mouseleave", hideTooltip)
-    .transition()
-    .duration(900)
-    .delay((d, i) => i * 70)
-    .attr("width", d => xRight(d.census) - xRight(0));
-
-  svg.selectAll("text.group-label")
-    .data(data)
-    .join("text")
-    .attr("class", "mirror-label")
-    .attr("x", mid)
-    .attr("y", d => y(d.group) + y.bandwidth() / 2)
-    .attr("text-anchor", "middle")
-    .attr("dominant-baseline", "middle")
-    .text(d => d.group);
-
-  svg.selectAll("text.left-value")
-    .data(data)
-    .join("text")
-    .attr("x", d => xLeft(d.broadway) - 8)
-    .attr("y", d => y(d.group) + y.bandwidth() / 2 + 4)
-    .attr("text-anchor", "end")
-    .attr("font-size", 10.5)
-    .attr("font-weight", 900)
-    .attr("fill", colors.ink)
-    .text(d => pct(d.broadway));
-
-  svg.selectAll("text.right-value")
-    .data(data)
-    .join("text")
-    .attr("x", d => xRight(d.census) + 8)
-    .attr("y", d => y(d.group) + y.bandwidth() / 2 + 4)
-    .attr("font-size", 10.5)
-    .attr("font-weight", 900)
-    .attr("fill", colors.ink)
-    .text(d => pct(d.census));
-
-  svg.append("g")
-    .attr("class", "axis")
-    .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(d3.axisBottom(xLeft).ticks(4).tickFormat(d => `${d}%`));
-
-  svg.append("g")
-    .attr("class", "axis")
-    .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(d3.axisBottom(xRight).ticks(4).tickFormat(d => `${d}%`));
-
-  svg.append("text")
-    .attr("x", mid)
-    .attr("y", height - 18)
-    .attr("text-anchor", "middle")
-    .attr("font-size", 13)
-    .attr("font-weight", 900)
-    .attr("fill", colors.ink)
-    .text("% of group");
-}
-
-function drawDumbbellChart(containerId, data) {
-  const el = d3.select(containerId);
-  el.selectAll("*").remove();
-
-  const width = 980;
-  const height = 540;
-  const margin = { top: 54, right: 70, bottom: 72, left: 190 };
-
-  const svg = el.append("svg").attr("viewBox", `0 0 ${width} ${height}`);
-
-  const x = d3.scaleLinear()
-    .domain([0, 55])
-    .range([margin.left, width - margin.right]);
-
-  const y = d3.scaleBand()
-    .domain(data.map(d => d.group))
-    .range([margin.top, height - margin.bottom])
-    .padding(0.42);
-
-  svg.append("g")
-    .attr("class", "axis")
-    .attr("transform", `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y));
-
-  svg.append("g")
-    .attr("class", "axis")
-    .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(d3.axisBottom(x).ticks(5).tickFormat(d => `${d}%`));
-
-  svg.selectAll("line.dumbbell-line")
-    .data(data)
-    .join("line")
-    .attr("x1", d => x(d.census))
-    .attr("x2", d => x(d.census))
-    .attr("y1", d => y(d.group) + y.bandwidth() / 2)
-    .attr("y2", d => y(d.group) + y.bandwidth() / 2)
-    .attr("stroke", colors.line)
-    .attr("stroke-width", 3)
-    .transition()
-    .duration(900)
-    .delay((d, i) => i * 80)
-    .attr("x2", d => x(d.broadway));
-
-  svg.selectAll("circle.census")
-    .data(data)
-    .join("circle")
-    .attr("cx", d => x(d.census))
-    .attr("cy", d => y(d.group) + y.bandwidth() / 2)
-    .attr("r", 0)
-    .attr("fill", colors.gold)
-    .on("mousemove", (event, d) => {
-      showTooltip(event, `<strong>${d.group}</strong><br>U.S. Population: ${pct(d.census)}`);
-    })
-    .on("mouseleave", hideTooltip)
-    .transition()
-    .duration(700)
-    .delay((d, i) => i * 80)
-    .attr("r", 7);
-
-  svg.selectAll("circle.broadway")
-    .data(data)
-    .join("circle")
-    .attr("cx", d => x(d.broadway))
-    .attr("cy", d => y(d.group) + y.bandwidth() / 2)
-    .attr("r", 0)
-    .attr("fill", colors.red)
-    .on("mousemove", (event, d) => {
-      showTooltip(event, `<strong>${d.group}</strong><br>Broadway Audience: ${pct(d.broadway)}`);
-    })
-    .on("mouseleave", hideTooltip)
-    .transition()
-    .duration(700)
-    .delay((d, i) => i * 80)
-    .attr("r", 8);
-
-  drawLegend(svg, [
-    { label: "U.S. Population", color: colors.gold },
-    { label: "Broadway Audience", color: colors.red }
-  ], margin.left, height - 25);
-}
-
-function drawAttendanceSlope() {
-  const el = d3.select("#attendance-chart");
-  el.selectAll("*").remove();
-
-  const width = 980;
-  const height = 540;
-  const margin = { top: 64, right: 170, bottom: 50, left: 170 };
-
-  const svg = el.append("svg").attr("viewBox", `0 0 ${width} ${height}`);
-
-  const x = d3.scalePoint()
-    .domain(["% of Theatregoers", "% of Theatre Visits"])
-    .range([margin.left, width - margin.right]);
-
-  const y = d3.scaleLinear()
-    .domain([0, 42])
-    .range([height - margin.bottom, margin.top]);
-
-  svg.append("g")
-    .attr("class", "axis")
-    .attr("transform", `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y).ticks(5).tickFormat(d => `${d}%`));
-
-  svg.selectAll("text.slope-head")
-    .data(x.domain())
-    .join("text")
-    .attr("x", d => x(d))
-    .attr("y", 28)
-    .attr("text-anchor", "middle")
-    .attr("fill", colors.red)
-    .attr("font-size", 14)
-    .attr("font-weight", 900)
-    .text(d => d);
-
-  const group = svg.selectAll("g.slope")
-    .data(attendanceData)
-    .join("g")
-    .attr("class", "slope")
-    .on("mousemove", (event, d) => {
-      showTooltip(event, `<strong>${d.group}</strong><br>Theatregoers: ${pct(d.theatregoers)}<br>Theatre Visits: ${pct(d.visits)}`);
-    })
-    .on("mouseleave", hideTooltip);
-
-  group.append("line")
-    .attr("x1", x("% of Theatregoers"))
-    .attr("x2", x("% of Theatregoers"))
-    .attr("y1", d => y(d.theatregoers))
-    .attr("y2", d => y(d.theatregoers))
-    .attr("stroke", colors.line)
-    .attr("stroke-width", 2)
-    .transition()
-    .duration(900)
-    .delay((d, i) => i * 80)
-    .attr("x2", x("% of Theatre Visits"))
-    .attr("y2", d => y(d.visits));
-
-  group.append("circle")
-    .attr("cx", x("% of Theatregoers"))
-    .attr("cy", d => y(d.theatregoers))
-    .attr("r", 0)
-    .attr("fill", colors.red)
-    .transition()
-    .duration(700)
-    .delay((d, i) => i * 80)
-    .attr("r", 6);
-
-  group.append("circle")
-    .attr("cx", x("% of Theatre Visits"))
-    .attr("cy", d => y(d.visits))
-    .attr("r", 0)
-    .attr("fill", colors.gold)
-    .transition()
-    .duration(700)
-    .delay((d, i) => i * 80)
-    .attr("r", 6);
-
-  group.append("text")
-    .attr("x", margin.left - 14)
-    .attr("y", d => y(d.theatregoers) + 4)
-    .attr("text-anchor", "end")
-    .attr("fill", colors.muted)
-    .attr("font-size", 12)
-    .attr("font-weight", 900)
-    .text(d => d.group);
-}
 
 function drawOriginMap(step = "world") {
   const el = d3.select("#origin-map");
@@ -647,148 +194,6 @@ function updateMapStep(step) {
   drawOriginMap(step);
 }
 
-function highlightOrigin(key) {
-  const group = originGroups.find(d => d.key === key);
-  if (!group) return;
-
-  d3.select("#origin-insight").text(
-    `${group.label} accounts for ${pct(group.value)} of Broadway admissions.`
-  );
-}
-
-function drawOriginDonut() {
-  const el = d3.select("#origin-donut-chart");
-  el.selectAll("*").remove();
-
-  const width = 560;
-  const height = 320;
-  const radius = 120;
-
-  const svg = el.append("svg").attr("viewBox", `0 0 ${width} ${height}`);
-  const g = svg.append("g").attr("transform", `translate(${width / 2}, ${height / 2 + 12})`);
-
-  const pie = d3.pie().value(d => d.value).sort(null);
-  const arc = d3.arc().innerRadius(radius * 0.50).outerRadius(radius);
-
-  g.selectAll("path")
-    .data(pie(originGroups))
-    .join("path")
-    .attr("fill", d => d.data.color)
-    .attr("stroke", colors.paper)
-    .attr("stroke-width", 4)
-    .on("mousemove", (event, d) => {
-      showTooltip(event, `<strong>${d.data.label}</strong><br>${pct(d.data.value)} of admissions`);
-    })
-    .on("mouseleave", hideTooltip)
-    .on("click", (event, d) => highlightOrigin(d.data.key))
-    .transition()
-    .duration(900)
-    .attrTween("d", function (d) {
-      const i = d3.interpolate(d.startAngle, d.endAngle);
-      return function (t) {
-        d.endAngle = i(t);
-        return arc(d);
-      };
-    });
-
-  g.append("text")
-    .attr("text-anchor", "middle")
-    .attr("y", -5)
-    .attr("fill", colors.red)
-    .attr("font-size", 30)
-    .attr("font-weight", 900)
-    .text("60%+");
-
-  g.append("text")
-    .attr("text-anchor", "middle")
-    .attr("y", 22)
-    .attr("fill", colors.muted)
-    .attr("font-size", 13)
-    .attr("font-weight", 900)
-    .text("outside NYC");
-}
-
-function drawOriginStackedBars() {
-  const el = d3.select("#origin-stacked-chart");
-  el.selectAll("*").remove();
-
-  const width = 760;
-  const height = 420;
-  const margin = { top: 50, right: 40, bottom: 70, left: 90 };
-
-  const keys = ["nyc", "suburbs", "otherUS", "international"];
-
-  const color = d3.scaleOrdinal()
-    .domain(keys)
-    .range([colors.red, colors.gold, colors.brown, colors.green]);
-
-  const svg = el.append("svg").attr("viewBox", `0 0 ${width} ${height}`);
-
-  const x = d3.scaleLinear()
-    .domain([0, 100])
-    .range([margin.left, width - margin.right]);
-
-  const y = d3.scaleBand()
-    .domain(originByType.map(d => d.type))
-    .range([margin.top, height - margin.bottom])
-    .padding(0.28);
-
-  const stacked = d3.stack().keys(keys)(originByType);
-
-  svg.append("g")
-    .attr("class", "axis")
-    .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(d3.axisBottom(x).ticks(4).tickFormat(d => `${d}%`));
-
-  svg.append("g")
-    .attr("class", "axis")
-    .attr("transform", `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y));
-
-  svg.selectAll("g.layer")
-    .data(stacked)
-    .join("g")
-    .attr("class", "layer")
-    .attr("fill", d => color(d.key))
-    .selectAll("rect")
-    .data(d => d.map(v => ({ ...v, key: d.key })))
-    .join("rect")
-    .attr("x", d => x(d[0]))
-    .attr("y", d => y(d.data.type))
-    .attr("height", y.bandwidth())
-    .attr("width", 0)
-    .attr("rx", 6)
-    .on("mousemove", (event, d) => {
-      const label = originGroups.find(g => g.key === d.key).label;
-      const value = d.data[d.key];
-      showTooltip(event, `<strong>${d.data.type}</strong><br>${label}: ${pct(value)}`);
-    })
-    .on("mouseleave", hideTooltip)
-    .on("click", (event, d) => highlightOrigin(d.key))
-    .transition()
-    .duration(850)
-    .attr("width", d => x(d[1]) - x(d[0]));
-
-  const legend = svg.append("g").attr("transform", `translate(${margin.left}, 20)`);
-
-  const legendItems = legend.selectAll("g")
-    .data(originGroups)
-    .join("g")
-    .attr("transform", (d, i) => `translate(${i * 145}, 0)`);
-
-  legendItems.append("circle")
-    .attr("r", 6)
-    .attr("fill", d => d.color);
-
-  legendItems.append("text")
-    .attr("x", 12)
-    .attr("y", 4)
-    .attr("fill", colors.muted)
-    .attr("font-size", 12)
-    .attr("font-weight", 900)
-    .text(d => d.label);
-}
-
 function normalizeShow(row) {
   return {
     show: row.show || row.Show || row.title || row.Title || row.name || row.Name,
@@ -824,13 +229,13 @@ function updateSelectedShow(d) {
   d3.select("#selected-show-name").text(d.show);
 
   d3.select("#selected-show-detail").html(`
-    <strong>Type:</strong> ${d.type}<br>
-    <strong>Gross:</strong> $${d.gross.toFixed(1)}M<br>
-    <strong>Attendance:</strong> ${Math.round(d.attendance * 1000)}k<br>
-    <strong>Capacity:</strong> ${d.capacity}%<br>
-    <strong>Average Ticket:</strong> $${d.avgTicket}<br>
-    <strong>Top Ticket:</strong> $${d.topTicket || "N/A"}<br>
-    <strong>Performances:</strong> ${d.performances || "N/A"}
+    Type: ${d.type}<br>
+    Gross: $${d.gross.toFixed(1)}M<br>
+    Attendance: ${Math.round(d.attendance * 1000)}k<br>
+    Capacity: ${d.capacity.toFixed(1)}%${d.capacity >= 98 ? " ★ High Capacity" : ""}<br>
+    Average Ticket: $${d.avgTicket}<br>
+    Top Ticket: $${d.topTicket || "N/A"}<br>
+    Performances: ${d.performances || "N/A"}
   `);
 }
 
@@ -840,23 +245,23 @@ function drawShowBubbleChart() {
 
   const data = getFilteredShows();
 
-  const width = 980;
-  const height = 640;
-  const margin = { top: 44, right: 58, bottom: 82, left: 90 };
+  const width = 1120;
+  const height = 720;
+  const margin = { top: 54, right: 40, bottom: 92, left: 100 };
 
   const svg = el.append("svg").attr("viewBox", `0 0 ${width} ${height}`);
 
   const x = d3.scaleLinear()
-    .domain([0, d3.max(allShows, d => d.attendance) * 1.15])
+    .domain([0, 0.85])
     .range([margin.left, width - margin.right]);
 
   const y = d3.scaleLinear()
-    .domain([0, d3.max(allShows, d => d.gross) * 1.18])
+    .domain([0, 140])
     .range([height - margin.bottom, margin.top]);
 
   const r = d3.scaleSqrt()
     .domain(d3.extent(allShows, d => d.avgTicket))
-    .range([7, 32]);
+    .range([7, 30]);
 
   const color = d3.scaleOrdinal()
     .domain(["Musical", "Play"])
@@ -865,33 +270,51 @@ function drawShowBubbleChart() {
   svg.append("text")
     .attr("class", "year-watermark")
     .attr("x", width / 2)
-    .attr("y", height / 2 + 40)
+    .attr("y", height / 2 + 45)
     .attr("text-anchor", "middle")
     .text("2025");
 
   svg.append("g")
     .attr("class", "grid")
     .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(d3.axisBottom(x).ticks(6).tickSize(-(height - margin.top - margin.bottom)).tickFormat(""));
+    .call(
+      d3.axisBottom(x)
+        .tickValues([...d3.range(0, 0.81, 0.1), 0.85])
+        .tickSize(-(height - margin.top - margin.bottom))
+        .tickFormat("")
+    );
 
   svg.append("g")
     .attr("class", "grid")
     .attr("transform", `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y).ticks(6).tickSize(-(width - margin.left - margin.right)).tickFormat(""));
+    .call(
+      d3.axisLeft(y)
+        .tickValues(d3.range(0, 141, 10))
+        .tickSize(-(width - margin.left - margin.right))
+        .tickFormat("")
+    );
 
   svg.append("g")
-  .attr("class", "axis")
-  .attr("transform", `translate(0,${height - margin.bottom})`)
-  .call(d3.axisBottom(x).ticks(6).tickFormat(d => `${Math.round(d * 1000)}k`));
+    .attr("class", "axis")
+    .attr("transform", `translate(0,${height - margin.bottom})`)
+    .call(
+      d3.axisBottom(x)
+        .tickValues(d3.range(0, 1.0, 0.1))
+        .tickFormat(d => `${Math.round(d * 1000)}k`)
+    );
 
   svg.append("g")
     .attr("class", "axis")
     .attr("transform", `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y).ticks(6).tickFormat(d => `$${d}M`));
+    .call(
+      d3.axisLeft(y)
+        .tickValues(d3.range(0, 141, 10))
+        .tickFormat(d => `$${d}M`)
+    );
 
   svg.append("text")
     .attr("x", width / 2)
-    .attr("y", height - 28)
+    .attr("y", height - 34)
     .attr("text-anchor", "middle")
     .attr("fill", colors.muted)
     .attr("font-size", 14)
@@ -901,7 +324,7 @@ function drawShowBubbleChart() {
   svg.append("text")
     .attr("transform", "rotate(-90)")
     .attr("x", -height / 2)
-    .attr("y", 30)
+    .attr("y", 34)
     .attr("text-anchor", "middle")
     .attr("fill", colors.muted)
     .attr("font-size", 14)
@@ -974,7 +397,7 @@ function drawShowBubbleChart() {
         Attendance: ${Math.round(d.attendance * 1000)}k<br>
         Avg Ticket: $${d.avgTicket}<br>
         Top Ticket: $${d.topTicket || "N/A"}<br>
-        Capacity: ${d.capacity}%<br>
+        Capacity: <strong>${d.capacity.toFixed(1)}%</strong> ${d.capacity >= 98 ? "★ High Capacity" : ""}<br>
         Performances: ${d.performances || "N/A"}<br>
         Type: ${d.type}`
       );
@@ -1004,9 +427,17 @@ function drawShowBubbleChart() {
 function applyBubbleHighlight() {
   d3.selectAll(".bubble")
     .classed("top-highlight", false)
+    .classed("capacity-highlight", false)
     .classed("faded", false);
 
-  if (highlightedMode === "none") return;
+  d3.selectAll(".capacity-label").remove();
+
+  const capacitySummary = d3.select("#capacity-summary");
+
+  if (highlightedMode === "none") {
+    capacitySummary.text("High capacity means a show was close to selling out.");
+    return;
+  }
 
   if (highlightedMode === "topGross") {
     const top = [...allShows]
@@ -1018,22 +449,54 @@ function applyBubbleHighlight() {
       .classed("faded", d => !top.includes(d.show))
       .classed("top-highlight", d => top.includes(d.show));
 
+    capacitySummary.text("Top Gross highlights the 5 highest-grossing shows.");
+
     d3.select("#selected-show-name").text("Top Gross Highlight");
     d3.select("#selected-show-detail").html(`
       Highlighting the top 5 shows by total gross revenue.
-      Other bubbles are faded so the highest-grossing shows are easier to compare.
+      Other bubbles are faded so the highest-grossing productions are easier to compare.
     `);
   }
 
   if (highlightedMode === "highCapacity") {
+    const threshold = 98;
+
+    const highCapacityShows = allShows.filter(d => d.capacity >= threshold);
+    const visibleHighCapacityShows = getFilteredShows().filter(d => d.capacity >= threshold);
+
     d3.selectAll(".bubble")
-      .classed("faded", d => d.capacity < 98)
-      .classed("top-highlight", d => d.capacity >= 98);
+      .classed("faded", d => d.capacity < threshold)
+      .classed("capacity-highlight", d => d.capacity >= threshold);
+
+    d3.select(".bubble-plot")
+      .selectAll("text.capacity-label")
+      .data(visibleHighCapacityShows, d => d.show)
+      .join("text")
+      .attr("class", "capacity-label")
+      .attr("x", d => {
+        const bubble = d3.selectAll(".bubble").filter(b => b.show === d.show).node();
+        return bubble ? +bubble.getAttribute("cx") + 12 : 0;
+      })
+      .attr("y", d => {
+        const bubble = d3.selectAll(".bubble").filter(b => b.show === d.show).node();
+        return bubble ? +bubble.getAttribute("cy") - 12 : 0;
+      })
+      .attr("opacity", 0)
+      .text(d => `${d.capacity.toFixed(1)}%`)
+      .transition()
+      .duration(500)
+      .attr("opacity", 1);
+
+    capacitySummary.html(`
+      <strong>${highCapacityShows.length} shows</strong> have Capacity ≥ ${threshold}%.<br>
+      This means these shows were close to selling out or used seats very efficiently.
+    `);
 
     d3.select("#selected-show-name").text("High Capacity Highlight");
     d3.select("#selected-show-detail").html(`
-      Highlighting shows with average capacity of 98% or higher.
-      This helps reveal which shows were closest to selling out.
+      Green outline marks shows with <strong>Capacity ≥ ${threshold}%</strong>.<br>
+      The green labels show each show's capacity percentage.<br>
+      High capacity is important because it suggests strong seat demand and high seat utilisation.
     `);
   }
 }
@@ -1077,27 +540,13 @@ d3.select("#reset-bubbles").on("click", function () {
   d3.select('.bubble-filter[data-type="all"]').classed("active", true);
 
   drawShowBubbleChart();
+
+  d3.select("#selected-show-name").text("Hover or click a bubble");
+  d3.select("#selected-show-detail").text("Show details will appear here.");
 });
 
 function drawAllCharts() {
-  drawRaceWaffleChart();
-
-  drawMirrorChart("#age-chart", ageData, {
-    leftTitle: "Broadway Audience",
-    rightTitle: "U.S. Population",
-    centerTitle: "Age Group",
-    leftColor: colors.brown,
-    rightColor: "#b13c2b",
-    maxValue: 25
-  });
-
-  drawDumbbellChart("#education-chart", educationData);
-  drawAttendanceSlope();
-
   updateMapStep("world");
-  drawOriginDonut();
-  drawOriginStackedBars();
-
   drawShowBubbleChart();
 }
 
