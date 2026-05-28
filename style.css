@@ -177,10 +177,10 @@ h1 {
 }
 
 .hero-stats {
-  padding: 18px;
+  padding: 28px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+  gap: 22px;
   align-content: center;
 }
 
