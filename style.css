@@ -177,7 +177,7 @@ h1 {
 }
 
 .hero-stats {
-  padding: 28px;
+  padding: 18px 20px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
@@ -185,8 +185,8 @@ h1 {
 }
 
 .flip-card {
-  aspect-ratio: 1.25 / 1;
-  perspective: 1300px;
+  height: 230px;
+  aspect-ratio: auto;
 }
 
 .flip-inner {
