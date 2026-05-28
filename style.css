@@ -163,7 +163,7 @@ main {
 
 h1 {
   margin: 0;
-  font-size: clamp(62px, 8vw, 128px);
+  font-size: clamp(60px, 8vw, 120px);
   line-height: 0.82;
   letter-spacing: -0.07em;
 }
@@ -186,7 +186,7 @@ h1 {
 
 .flip-card {
   aspect-ratio: 1 / 1;
-  perspective: 1300px;
+  perspective: 1400px;
 }
 
 .flip-inner {
@@ -219,8 +219,8 @@ h1 {
 
 .flip-front p {
   margin: 0;
-  font-size: clamp(18px, 1.6vw, 45px);
-  line-height: 1.2;
+  font-size: clamp(18px, 1.6vw, 40px);
+  line-height: 1.3;
   font-weight: 900;
   color: var(--muted);
 }
@@ -232,7 +232,7 @@ h1 {
 .flip-back span {
   display: block;
   color: var(--red);
-  font-size: clamp(42px, 4.5vw, 70px);
+  font-size: clamp(42px, 4.5vw, 65px);
   line-height: 0.9;
   font-weight: 900;
   letter-spacing: -0.05em;
